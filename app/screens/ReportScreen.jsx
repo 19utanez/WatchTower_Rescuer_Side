@@ -1,56 +1,57 @@
-import React from 'react';
-import { View, FlatList, StyleSheet, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, FlatList, StyleSheet, Text, ActivityIndicator } from 'react-native';
 import ReportCard from '../components/ReportCard';
+import axios from 'axios';
 
-const reportsData = [
-  {
-    id: '1',
-    reportedBy: 'John Doe',
-    location: 'Downtown Park',
-    images: ['https://via.placeholder.com/80', 'https://via.placeholder.com/80'],
-    description: 'A tree fell across the main walking path.',
-  },
-  {
-    id: '2',
-    reportedBy: 'Jane Smith',
-    location: 'City Library',
-    images: ['https://via.placeholder.com/80'],
-    description: 'The water fountain is not working.',
-  },
-  {
-    id: '3',
-    reportedBy: 'Bob Johnson',
-    location: 'Community Hall',
-    images: [],
-    description: 'A pipe burst in the main hall.',
-  },
-];
+const ReportScreen = () => {
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-export default function ReportScreen({ navigation }) {
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const response = await axios.get('http://192.168.1.12:5000/api/reports');
+        setReports(response.data);
+      } catch (error) {
+        console.error('Error fetching reports:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReports();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#fff" />
+        <Text style={styles.loadingText}>Loading Reports...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      {/* Navbar */}
       <View style={styles.navbar}>
         <Text style={styles.navbarText}>Reports</Text>
       </View>
-
-      {/* Report List */}
       <FlatList
-        data={reportsData}
-        keyExtractor={(item) => item.id}
+        data={reports}
+        keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
           <ReportCard
             reportedBy={item.reportedBy}
             location={item.location}
-            images={item.images}
-            description={item.description}
+            images={item.disasterImages}
+            description={item.disasterInfo}
           />
         )}
         contentContainerStyle={styles.listContent}
       />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#071025' },
@@ -70,4 +71,17 @@ const styles = StyleSheet.create({
   listContent: {
     padding: 16,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#071025',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#fff',
+  },
 });
+
+export default ReportScreen;
