@@ -14,7 +14,7 @@ export default function LoginScreen({ navigation }) {
     setLoading(true);
     try {
       // API call for login
-      const response = await axios.post(`http://172.20.23.3:5000/api/auth/login`, {
+      const response = await axios.post(`http://192.168.1.12:5000/api/auth/login`, {
         username,
         password,
       });
@@ -66,9 +66,7 @@ export default function LoginScreen({ navigation }) {
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.createAccountText}>Create an Account</Text>
-      </TouchableOpacity>
+      
     </View>
   );
 }
