@@ -1,3 +1,4 @@
+// controllers/reportController.js
 import Report from '../models/Report.js';
 
 // Fetch all reports

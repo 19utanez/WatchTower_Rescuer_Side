@@ -43,7 +43,7 @@ const ReportScreen = () => {
           <ReportCard
             reportedBy={item.reportedBy}
             location={item.location}
-            images={item.disasterImages}
+            images={item.disasterImages}  /* Fetching image URLs from MongoDB */
             description={item.disasterInfo}
           />
         )}

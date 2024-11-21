@@ -1,18 +1,38 @@
-// components/ReportCard.jsx
-import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import Modal from 'react-native-modal';
 
 const ReportCard = ({ reportedBy, location, images, description }) => {
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState('');
+
+  const toggleModal = (image) => {
+    setSelectedImage(image); // Set the selected image to show in the modal
+    setIsModalVisible(!isModalVisible); // Toggle modal visibility
+  };
+
   return (
     <View style={styles.card}>
       <Text style={styles.title}>Reported By: {reportedBy}</Text>
       <Text style={styles.subtitle}>Location: {location}</Text>
+      
+      {/* Display the images */}
       <View style={styles.imageContainer}>
         {images.map((image, index) => (
-          <Image key={index} source={{ uri: image }} style={styles.image} />
+          <TouchableOpacity key={index} onPress={() => toggleModal(image)}>
+            <Image source={{ uri: image }} style={styles.image} />
+          </TouchableOpacity>
         ))}
       </View>
+      
       <Text style={styles.description}>{description}</Text>
+
+      {/* Modal for showing the larger image */}
+      <Modal isVisible={isModalVisible} onBackdropPress={toggleModal} style={styles.modal}>
+        <View style={styles.modalContent}>
+          <Image source={{ uri: selectedImage }} style={styles.modalImage} />
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -51,6 +71,22 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     color: '#fff',
+  },
+  // Modal styles
+  modal: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalImage: {
+    width: 300,
+    height: 300,
+    borderRadius: 8,
   },
 });
 
