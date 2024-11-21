@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
-import reportRoutes from './routes/reportRoutes.js';
+import reportRoutes from './routes/reportRoutes.js';  // Ensure correct import
 
 dotenv.config();
 connectDB();
@@ -14,7 +14,7 @@ app.use(express.json()); // Parse JSON bodies
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api', reportRoutes);
+app.use('/api', reportRoutes);  // Ensure this is correctly set
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

@@ -1,92 +1,58 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import Modal from 'react-native-modal';
 
-const ReportCard = ({ reportedBy, location, images, description }) => {
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedImage, setSelectedImage] = useState('');
-
-  const toggleModal = (image) => {
-    setSelectedImage(image); // Set the selected image to show in the modal
-    setIsModalVisible(!isModalVisible); // Toggle modal visibility
-  };
-
+const ReportCard = ({ reportedBy, location, images = [], description, onImageClick }) => {
   return (
-    <View style={styles.card}>
-      <Text style={styles.title}>Reported By: {reportedBy}</Text>
-      <Text style={styles.subtitle}>Location: {location}</Text>
-      
-      {/* Display the images */}
-      <View style={styles.imageContainer}>
-        {images.map((image, index) => (
-          <TouchableOpacity key={index} onPress={() => toggleModal(image)}>
-            <Image source={{ uri: image }} style={styles.image} />
-          </TouchableOpacity>
-        ))}
-      </View>
-      
-      <Text style={styles.description}>{description}</Text>
+    <View style={styles.reportCard}>
+      <Text style={styles.reportTitle}>{reportedBy} - {location}</Text>
+      <Text style={styles.reportDescription}>{description}</Text>
 
-      {/* Modal for showing the larger image */}
-      <Modal isVisible={isModalVisible} onBackdropPress={toggleModal} style={styles.modal}>
-        <View style={styles.modalContent}>
-          <Image source={{ uri: selectedImage }} style={styles.modalImage} />
-        </View>
-      </Modal>
+      <View style={styles.imagesContainer}>
+        {images.length > 0 ? (
+          images.map((url, index) => (
+            <TouchableOpacity key={index} onPress={() => onImageClick(images, index)}>
+              <Image source={{ uri: url }} style={styles.image} />
+            </TouchableOpacity>
+          ))
+        ) : (
+          <Text style={styles.noImageText}>No images available</Text>
+        )}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  card: {
+  reportCard: {
     backgroundColor: '#1E2A3A',
-    padding: 16,
-    marginVertical: 8,
     borderRadius: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 2,
+    padding: 16,
+    marginBottom: 16,
   },
-  title: {
-    fontSize: 16,
+  reportTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#fff',
   },
-  subtitle: {
-    fontSize: 14,
-    color: '#D9D9D9',
-    marginVertical: 4,
+  reportDescription: {
+    marginTop: 8,
+    fontSize: 16,
+    color: '#ccc',
   },
-  imageContainer: {
+  imagesContainer: {
+    marginTop: 16,
     flexDirection: 'row',
-    marginVertical: 8,
+    flexWrap: 'wrap',
   },
   image: {
-    width: 120,
-    height: 120,
-    marginRight: 8,
-    borderRadius: 4,
-  },
-  description: {
-    fontSize: 14,
-    color: '#fff',
-  },
-  // Modal styles
-  modal: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    padding: 20,
+    width: 100,
+    height: 100,
+    margin: 8,
     borderRadius: 8,
-    alignItems: 'center',
   },
-  modalImage: {
-    width: 300,
-    height: 300,
-    borderRadius: 8,
+  noImageText: {
+    color: '#aaa',
+    fontStyle: 'italic',
   },
 });
 
