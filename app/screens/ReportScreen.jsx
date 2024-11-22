@@ -122,7 +122,31 @@ const ReportScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // Styles as defined previously
+  container: {
+    flex: 1,
+    backgroundColor: '#121212',
+    padding: 16,
+  },
+  previewContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  },
+  previewImage: {
+    width: '90%',
+    height: '70%',
+    resizeMode: 'contain',
+  },
+  modalControls: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '80%',
+    marginTop: 16,
+  },
+  reportCard: {
+    marginBottom: 20,
+  },
 });
 
 export default ReportScreen;
