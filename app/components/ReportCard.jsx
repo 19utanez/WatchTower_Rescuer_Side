@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Modal, Button } from 'react-native';
-import { getImageUrlById } from '../utils/ImageUtils';
+import { getImageUrlById } from '../utils/ImageUtils'; // Ensure this is implemented correctly
 
 const ReportCard = ({ reportedBy, location, images = [], description }) => {
   // State for managing the image preview
@@ -8,8 +8,11 @@ const ReportCard = ({ reportedBy, location, images = [], description }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Generate URLs using the utility function
-  const imageUrls = images.map((id) => getImageUrlById(id));
+  const imageUrls = images.map((id) => getImageUrlById(id));  // Use the function to get URLs
 
+
+    // Log the image URLs to the console
+    console.log(imageUrls); // This will show the URLs in the console
   const handleImageClick = (index) => {
     setCurrentImageIndex(index);
     setIsPreviewOpen(true);

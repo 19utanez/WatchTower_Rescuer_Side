@@ -1,68 +1,129 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Button, TouchableOpacity, Alert } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker, Polyline } from 'react-native-maps';
 import { MaterialCommunityIcons } from 'react-native-vector-icons';
-import axios from 'axios';
+import polyline from 'polyline'; // For decoding Google Maps polyline
+import { GOOGLE_MAPS_API_KEY } from '@env'; // Ensure .env file has your API key
 
-export default function MapScreen({ navigation }) {
-  // Initial center location, similar to the center in the React code
+export default function MapScreen({ route, navigation }) {
+  const { location } = route.params; // Get the destination location from navigation params
+
   const initialCenter = {
-    latitude: 14.601972841610728, // Adjust to desired latitude
-    longitude: 121.03527772039602, // Adjust to desired longitude
-    latitudeDelta: 0.0922,  // Initial zoom level
-    longitudeDelta: 0.0421, // Initial zoom level
+    latitude: 14.5995, // Static origin marker
+    longitude: 121.0338, // Static origin marker
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
   };
 
-  // State for map region and marker location
   const [region, setRegion] = useState(initialCenter);
-  const [marker, setMarker] = useState(initialCenter);
+  const [destination, setDestination] = useState(null);
+  const [routeCoordinates, setRouteCoordinates] = useState([]); // For the polyline
 
-  // Function to get place name from latitude and longitude
-  const getPlaceName = async (latitude, longitude) => {
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY; // Your API key from .env file
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
-    
+  // Geocode address to get latitude and longitude
+  const geocodeAddress = async (address) => {
     try {
-      const response = await axios.get(url);
-      console.log("Geocoding API response:", response.data); // Log the response to inspect it
-      
-      // Check if we have results and extract the formatted address
-      const address = response.data.results && response.data.results[0]?.formatted_address;
-      return address || 'No address found';
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+          address
+        )}&key=${GOOGLE_MAPS_API_KEY}`
+      );
+      const data = await response.json();
+
+      if (data.status === 'OK' && data.results.length > 0) {
+        const { lat, lng } = data.results[0].geometry.location;
+        console.log('Geocoded location:', { lat, lng });
+        return { latitude: lat, longitude: lng };
+      } else {
+        console.error('Geocoding failed:', data);
+        Alert.alert('Error', 'Unable to geocode the provided address.');
+        return null;
+      }
     } catch (error) {
-      console.error('Error fetching place name:', error);
-      return 'Error fetching address';
+      console.error('Geocoding error:', error);
+      Alert.alert('Error', 'Unable to geocode the provided address.');
+      return null;
     }
   };
 
-  // Handle map press to update marker and display alert with place name
-  const handleMapPress = async (event) => {
-    const { latitude, longitude } = event.nativeEvent.coordinate;
-    setMarker({ latitude, longitude });
-  
-    // Get the place name based on the clicked coordinates
-    const placeName = await getPlaceName(latitude, longitude);
-  
-    // Show notification with the place name and options
-    Alert.alert(
-      "Marker Moved",
-      `You placed the marker at:\n${placeName}`,
-      [
-        {
-          text: "Cancel", // Button to cancel
-          onPress: () => console.log("Cancel Pressed"), // Function for cancel
-          style: "cancel", // Style for cancel
-        },
-        {
-          text: "Report Now", // Button to report now
-          onPress: () => {
-            // Navigate to the Report tab in the TabNavigator, passing location as a parameter
-            navigation.navigate('Reports', { location: placeName });
-          },
-        },
-      ]
-    );
-  };
+  // Parse and validate the location passed from ReportScreen
+  useEffect(() => {
+    const processLocation = async () => {
+      if (location) {
+        console.log('Received location from ReportScreen:', location);
+
+        // Try parsing it as latitude,longitude format
+        if (location.includes(',')) {
+          const [lat, lng] = location.split(',').map(part => part.trim()); // Trim extra spaces
+
+          console.log('Parsed latitude:', lat, 'Parsed longitude:', lng);
+
+          const parsedLat = parseFloat(lat);
+          const parsedLng = parseFloat(lng);
+
+          if (!isNaN(parsedLat) && !isNaN(parsedLng)) {
+            setDestination({ latitude: parsedLat, longitude: parsedLng });
+            console.log('Destination set:', { latitude: parsedLat, longitude: parsedLng });
+          } else {
+            // If parsing failed, treat it as an address
+            const geocodedLocation = await geocodeAddress(location);
+            if (geocodedLocation) {
+              setDestination(geocodedLocation);
+              console.log('Destination set after geocoding:', geocodedLocation);
+            }
+          }
+        } else {
+          // Handle address format (requires geocoding)
+          const geocodedLocation = await geocodeAddress(location);
+          if (geocodedLocation) {
+            setDestination(geocodedLocation);
+            console.log('Destination set after geocoding:', geocodedLocation);
+          }
+        }
+      } else {
+        console.log('No location passed.');
+      }
+    };
+
+    processLocation();
+  }, [location]);
+
+  // Fetch route from Google Maps Directions API
+  useEffect(() => {
+    const fetchRoute = async () => {
+      if (!destination) return;
+
+      const origin = `${initialCenter.latitude},${initialCenter.longitude}`;
+      const dest = `${destination.latitude},${destination.longitude}`;
+
+      console.log('Fetching route from', origin, 'to', dest);
+
+      try {
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${dest}&key=${GOOGLE_MAPS_API_KEY}`
+        );
+        const data = await response.json();
+
+        // Log the full response for debugging
+        console.log('Google Maps API response:', data);
+
+        if (data.status === 'OK' && data.routes.length > 0) {
+          const points = data.routes[0].overview_polyline.points;
+          const decodedPoints = polyline.decode(points).map(([lat, lng]) => ({
+            latitude: lat,
+            longitude: lng,
+          }));
+          setRouteCoordinates(decodedPoints);
+        } else {
+          Alert.alert('No route found', 'Unable to fetch route from Google Maps.');
+        }
+      } catch (error) {
+        console.error('Error fetching route:', error);
+        Alert.alert('Error', 'Unable to fetch route. Please try again.');
+      }
+    };
+
+    fetchRoute();
+  }, [destination]);
 
   // Zoom in functionality
   const zoomIn = () => {
@@ -92,12 +153,19 @@ export default function MapScreen({ navigation }) {
         <MaterialCommunityIcons name="account-circle" size={60} color="#D9D9D9" />
       </TouchableOpacity>
 
-      <MapView
-        style={styles.map}
-        region={region}  // Center map to region state
-        onPress={handleMapPress}  // Handle map clicks
-      >
-        <Marker coordinate={marker} />  {/* Display marker at the selected location */}
+      <MapView style={styles.map} region={region}>
+        {/* Origin Marker */}
+        <Marker coordinate={region} title="Origin" description="Static location" />
+
+        {/* Destination Marker */}
+        {destination && (
+          <Marker coordinate={destination} title="Destination" description="Dynamic location" />
+        )}
+
+        {/* Route Polyline */}
+        {routeCoordinates.length > 0 && (
+          <Polyline coordinates={routeCoordinates} strokeColor="blue" strokeWidth={4} />
+        )}
       </MapView>
 
       <View style={styles.buttonContainer}>
@@ -116,6 +184,12 @@ const styles = StyleSheet.create({
   map: {
     flex: 1,
   },
+  profileIcon: {
+    position: 'absolute',
+    top: 5,
+    left: 5,
+    zIndex: 1, // Ensure the icon is above other elements
+  },
   buttonContainer: {
     position: 'absolute',
     bottom: 20,
@@ -123,11 +197,4 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     width: '100%',
   },
-  profileIcon: {
-    position: 'absolute',
-    top: 5,
-    left: 5,
-    zIndex: 1, // Ensure the icon is above other elements
-  },
 });
-  

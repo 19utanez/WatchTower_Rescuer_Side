@@ -12,6 +12,7 @@ export const getReports = async (req, res) => {
   }
 };
 
+
 // Fetch image by ID
 export const getImage = async (req, res) => {
   const { id } = req.params;
@@ -23,6 +24,11 @@ export const getImage = async (req, res) => {
       return res.status(404).send('File not found');
     }
 
+    // Set the correct content type (if known)
+    const contentType = file[0].contentType || 'application/octet-stream';
+    res.set('Content-Type', contentType);
+
+    // Stream the image data
     gfsBucket.openDownloadStream(file[0]._id).pipe(res);
   } catch (error) {
     console.error("Error retrieving image:", error);

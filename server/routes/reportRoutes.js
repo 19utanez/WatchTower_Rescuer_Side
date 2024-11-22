@@ -1,5 +1,4 @@
 import express from 'express';
-import multer from 'multer';
 import { getReports, getImage } from '../controllers/reportController.js'; // Ensure correct import
 
 const router = express.Router();

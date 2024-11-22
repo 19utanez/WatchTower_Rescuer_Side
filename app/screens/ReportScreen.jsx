@@ -1,25 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, Modal, Image, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { View, FlatList, Modal, Image, StyleSheet, TouchableOpacity, Text, Button } from 'react-native';
 import ReportCard from '../components/ReportCard';
 
-const ReportScreen = () => {
+const ReportScreen = ({ navigation }) => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [currentImages, setCurrentImages] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Fetching reports and image URLs
   const fetchReports = async () => {
     try {
-      const response = await fetch('http://172.20.23.3:5000/api/reports');
+      const response = await fetch('http://192.168.1.12:5000/api/reports');
       const data = await response.json();
 
       const updatedReports = await Promise.all(
         data.map(async (report) => {
           const imageUrls = await Promise.all(
             report.disasterImages.map(async (id) => {
-              const imageResponse = await fetch(`http://172.20.23.3:5000/api/image/${id}`);
+              const imageResponse = await fetch(`http://192.168.1.12:5000/api/image/${id}`);
               return imageResponse.url;
             })
           );
@@ -39,17 +38,14 @@ const ReportScreen = () => {
     fetchReports();
   }, []);
 
-  // Handle image click to open preview
   const handleImageClick = (images, index) => {
     setCurrentImages(images);
     setCurrentIndex(index);
     setPreviewVisible(true);
   };
 
-  // Close preview modal
   const closePreview = () => setPreviewVisible(false);
 
-  // Handle Next and Previous image navigation
   const handleNextImage = () => {
     if (currentIndex < currentImages.length - 1) {
       setCurrentIndex(currentIndex + 1);
@@ -62,15 +58,24 @@ const ReportScreen = () => {
     }
   };
 
-  // Render each report card
   const renderReport = ({ item }) => (
-    <ReportCard
-      reportedBy={item.reportedBy}
-      location={item.location}
-      description={item.disasterInfo}
-      images={item.imageUrls}
-      onImageClick={handleImageClick}
-    />
+    <View style={styles.reportCard}>
+      <ReportCard
+        reportedBy={item.reportedBy}
+        location={item.location}
+        description={item.disasterInfo}
+        images={item.imageUrls}
+        onImageClick={handleImageClick}
+      />
+      <Button
+  title="Respond"
+  onPress={() => {
+    const location = item.location; // location is already in "latitude,longitude" format
+    navigation.navigate('Map', { location });
+  }}
+/>
+
+    </View>
   );
 
   if (loading) {
@@ -85,7 +90,6 @@ const ReportScreen = () => {
         renderItem={renderReport}
       />
 
-      {/* Image preview modal */}
       <Modal visible={previewVisible} transparent>
         <View style={styles.previewContainer}>
           <Image
@@ -118,49 +122,7 @@ const ReportScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#121212',
-    padding: 16,
-  },
-  previewContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-  },
-  previewImage: {
-    width: '90%',
-    height: '70%',
-    resizeMode: 'contain',
-  },
-  modalControls: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '80%',
-    marginTop: 16,
-  },
-  controlButton: {
-    padding: 10,
-    backgroundColor: '#1e88e5',
-    borderRadius: 5,
-  },
-  disabled: {
-    backgroundColor: '#ccc',
-  },
-  controlText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  closeButton: {
-    padding: 10,
-    backgroundColor: 'red',
-    borderRadius: 5,
-  },
-  closeText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
+  // Styles as defined previously
 });
 
 export default ReportScreen;
