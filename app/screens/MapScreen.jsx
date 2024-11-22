@@ -155,11 +155,11 @@ export default function MapScreen({ route, navigation }) {
 
       <MapView style={styles.map} region={region}>
         {/* Origin Marker */}
-        <Marker coordinate={region} title="Origin" description="Static location" />
+        <Marker coordinate={region} title="Origin" description="SAN JUAN NDRRMO HEAD QUARTERS" />
 
         {/* Destination Marker */}
         {destination && (
-          <Marker coordinate={destination} title="Destination" description="Dynamic location" />
+          <Marker coordinate={destination} title="Destination" description="" />
         )}
 
         {/* Route Polyline */}

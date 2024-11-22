@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, Modal, Image, StyleSheet, TouchableOpacity, Text, Button } from 'react-native';
+import { View, FlatList, Modal, Image, StyleSheet, TouchableOpacity, Text, Button, ActivityIndicator } from 'react-native';
 import ReportCard from '../components/ReportCard';
 
 const ReportScreen = ({ navigation }) => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false); // New state for the refresh button
   const [previewVisible, setPreviewVisible] = useState(false);
   const [currentImages, setCurrentImages] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const fetchReports = async () => {
     try {
+      setLoading(true); // Show loading while fetching
       const response = await fetch('http://192.168.1.12:5000/api/reports');
       const data = await response.json();
 
@@ -34,9 +36,20 @@ const ReportScreen = ({ navigation }) => {
     }
   };
 
+  // UseEffect to fetch reports on initial render
   useEffect(() => {
     fetchReports();
   }, []);
+
+  // Refresh button handler
+  const handleRefresh = async () => {
+    try {
+      setRefreshing(true); // Show refreshing indicator
+      await fetchReports(); // Re-fetch reports
+    } finally {
+      setRefreshing(false); // Stop refreshing indicator
+    }
+  };
 
   const handleImageClick = (images, index) => {
     setCurrentImages(images);
@@ -68,18 +81,17 @@ const ReportScreen = ({ navigation }) => {
         onImageClick={handleImageClick}
       />
       <Button
-  title="Respond"
-  onPress={() => {
-    const location = item.location; // location is already in "latitude,longitude" format
-    navigation.navigate('Map', { location });
-  }}
-/>
-
+        title="Respond"
+        onPress={() => {
+          const location = item.location; // location is already in "latitude,longitude" format
+          navigation.navigate('Map', { location });
+        }}
+      />
     </View>
   );
 
   if (loading) {
-    return <Text>Loading...</Text>;
+    return <ActivityIndicator size="large" color="#00ff00" style={styles.loader} />;
   }
 
   return (
@@ -117,6 +129,11 @@ const ReportScreen = ({ navigation }) => {
           </View>
         </View>
       </Modal>
+
+      {/* Refresh Button */}
+      <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
+        <Text style={styles.refreshText}>{refreshing ? 'Refreshing...' : 'Refresh'}</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -126,6 +143,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#121212',
     padding: 16,
+  },
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   previewContainer: {
     flex: 1,
@@ -146,6 +168,17 @@ const styles = StyleSheet.create({
   },
   reportCard: {
     marginBottom: 20,
+  },
+  refreshButton: {
+    backgroundColor: '#008CBA',
+    padding: 15,
+    marginTop: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  refreshText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
   },
 });
 
