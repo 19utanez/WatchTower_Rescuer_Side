@@ -9,7 +9,7 @@ dotenv.config();
 connectDB();
 
 const app = express();
-app.use(cors());
+app.use(cors()); // Add any specific origins if needed
 app.use(express.json()); // Parse JSON bodies
 
 // Routes

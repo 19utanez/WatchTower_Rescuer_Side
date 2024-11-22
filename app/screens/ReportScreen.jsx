@@ -15,19 +15,15 @@ const ReportScreen = ({ navigation }) => {
       setLoading(true); // Show loading while fetching
       const response = await fetch('http://192.168.1.12:5000/api/reports');
       const data = await response.json();
-
-      const updatedReports = await Promise.all(
-        data.map(async (report) => {
-          const imageUrls = await Promise.all(
-            report.disasterImages.map(async (id) => {
-              const imageResponse = await fetch(`http://192.168.1.12:5000/api/image/${id}`);
-              return imageResponse.url;
-            })
-          );
-          return { ...report, imageUrls };
-        })
-      );
-
+  
+      const updatedReports = data.map((report) => {
+        // Construct image URLs directly
+        const imageUrls = report.disasterImages.map(
+          (id) => `http://192.168.1.12:5000/api/image/${id}`
+        );
+        return { ...report, imageUrls };
+      });
+  
       setReports(updatedReports);
     } catch (error) {
       console.error('Error fetching reports:', error);
@@ -35,7 +31,7 @@ const ReportScreen = ({ navigation }) => {
       setLoading(false);
     }
   };
-
+  
   // UseEffect to fetch reports on initial render
   useEffect(() => {
     fetchReports();

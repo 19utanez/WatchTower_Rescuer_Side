@@ -19,19 +19,16 @@ export const getImage = async (req, res) => {
   const gfsBucket = getGfsBucket();
 
   try {
-    const file = await gfsBucket.find({ _id: mongoose.Types.ObjectId(id) }).toArray();
+    const file = await gfsBucket.find({ _id: new mongoose.Types.ObjectId(id) }).toArray();
     if (!file || file.length === 0) {
-      return res.status(404).send('File not found');
+      return res.status(404).json({ message: 'File not found' });
     }
 
-    // Set the correct content type (if known)
-    const contentType = file[0].contentType || 'application/octet-stream';
-    res.set('Content-Type', contentType);
-
-    // Stream the image data
+    // Stream the image to the client
+    res.set('Content-Type', file[0].contentType || 'application/octet-stream');
     gfsBucket.openDownloadStream(file[0]._id).pipe(res);
   } catch (error) {
     console.error("Error retrieving image:", error);
-    res.status(500).send("Error retrieving image");
+    res.status(500).json({ message: 'Error retrieving image', error: error.message });
   }
 };

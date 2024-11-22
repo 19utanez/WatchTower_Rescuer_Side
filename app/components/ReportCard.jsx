@@ -8,7 +8,7 @@ const ReportCard = ({ reportedBy, location, images = [], description }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Generate URLs using the utility function
-  const imageUrls = images.map((id) => getImageUrlById(id));  // Use the function to get URLs
+  const imageUrls = images; // Images are already URLs
 
 
     // Log the image URLs to the console
