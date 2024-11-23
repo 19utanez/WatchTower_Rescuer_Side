@@ -164,7 +164,7 @@ export default function MapScreen({ route, navigation }) {
 
         {/* Route Polyline */}
         {routeCoordinates.length > 0 && (
-          <Polyline coordinates={routeCoordinates} strokeColor="blue" strokeWidth={4} />
+          <Polyline coordinates={routeCoordinates} strokeColor="blue" strokeWidth={5} />
         )}
       </MapView>
 

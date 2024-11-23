@@ -13,13 +13,13 @@ const ReportScreen = ({ navigation }) => {
   const fetchReports = async () => {
     try {
       setLoading(true); // Show loading while fetching
-      const response = await fetch('http://192.168.1.12:5000/api/reports');
+      const response = await fetch('http://172.20.23.3:5000/api/reports');
       const data = await response.json();
   
       const updatedReports = data.map((report) => {
         // Construct image URLs directly
         const imageUrls = report.disasterImages.map(
-          (id) => `http://192.168.1.12:5000/api/image/${id}`
+          (id) => `http://172.20.23.3:5000/api/image/${id}`
         );
         return { ...report, imageUrls };
       });
