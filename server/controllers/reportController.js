@@ -1,34 +1,19 @@
-import Report from '../models/Report.js';
-import { getGfsBucket } from "../utils/gridFsUtils.js";
-import mongoose from 'mongoose';
-
-// Fetch all reports
-export const getReports = async (req, res) => {
-  try {
-    const reports = await Report.find();
-    res.status(200).json(reports);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch reports', error: error.message });
-  }
-};
-
-
-// Fetch image by ID
-export const getImage = async (req, res) => {
+// Update report status
+export const updateReportStatus = async (req, res) => {
   const { id } = req.params;
-  const gfsBucket = getGfsBucket();
+  const { disasterStatus } = req.body;
 
   try {
-    const file = await gfsBucket.find({ _id: new mongoose.Types.ObjectId(id) }).toArray();
-    if (!file || file.length === 0) {
-      return res.status(404).json({ message: 'File not found' });
+    const report = await Report.findByIdAndUpdate(
+      id,
+      { disasterStatus },
+      { new: true }
+    );
+    if (!report) {
+      return res.status(404).json({ message: 'Report not found' });
     }
-
-    // Stream the image to the client
-    res.set('Content-Type', file[0].contentType || 'application/octet-stream');
-    gfsBucket.openDownloadStream(file[0]._id).pipe(res);
+    res.status(200).json(report); // Return the updated report
   } catch (error) {
-    console.error("Error retrieving image:", error);
-    res.status(500).json({ message: 'Error retrieving image', error: error.message });
+    res.status(500).json({ message: 'Failed to update report status', error: error.message });
   }
 };

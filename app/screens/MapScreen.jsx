@@ -68,19 +68,9 @@ export default function MapScreen({ route, navigation }) {
             const geocodedLocation = await geocodeAddress(location);
             if (geocodedLocation) {
               setDestination(geocodedLocation);
-              console.log('Destination set after geocoding:', geocodedLocation);
             }
           }
-        } else {
-          // Handle address format (requires geocoding)
-          const geocodedLocation = await geocodeAddress(location);
-          if (geocodedLocation) {
-            setDestination(geocodedLocation);
-            console.log('Destination set after geocoding:', geocodedLocation);
-          }
         }
-      } else {
-        console.log('No location passed.');
       }
     };
 
@@ -90,87 +80,51 @@ export default function MapScreen({ route, navigation }) {
   // Fetch route from Google Maps Directions API
   useEffect(() => {
     const fetchRoute = async () => {
-      if (!destination) return;
+      if (destination) {
+        try {
+          const response = await fetch(
+            `https://maps.googleapis.com/maps/api/directions/json?origin=${initialCenter.latitude},${initialCenter.longitude}&destination=${destination.latitude},${destination.longitude}&key=${GOOGLE_MAPS_API_KEY}`
+          );
+          const data = await response.json();
 
-      const origin = `${initialCenter.latitude},${initialCenter.longitude}`;
-      const dest = `${destination.latitude},${destination.longitude}`;
-
-      console.log('Fetching route from', origin, 'to', dest);
-
-      try {
-        const response = await fetch(
-          `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${dest}&key=${GOOGLE_MAPS_API_KEY}`
-        );
-        const data = await response.json();
-
-        // Log the full response for debugging
-        console.log('Google Maps API response:', data);
-
-        if (data.status === 'OK' && data.routes.length > 0) {
-          const points = data.routes[0].overview_polyline.points;
-          const decodedPoints = polyline.decode(points).map(([lat, lng]) => ({
-            latitude: lat,
-            longitude: lng,
-          }));
-          setRouteCoordinates(decodedPoints);
-        } else {
-          Alert.alert('No route found', 'Unable to fetch route from Google Maps.');
+          if (data.status === 'OK') {
+            const points = polyline.decode(data.routes[0].overview_polyline.points);
+            const routeCoords = points.map((point) => ({
+              latitude: point[0],
+              longitude: point[1],
+            }));
+            setRouteCoordinates(routeCoords);
+          } else {
+            console.error('Directions API error:', data);
+            Alert.alert('Error', 'Unable to fetch route data.');
+          }
+        } catch (error) {
+          console.error('Route fetching error:', error);
+          Alert.alert('Error', 'Unable to fetch route data.');
         }
-      } catch (error) {
-        console.error('Error fetching route:', error);
-        Alert.alert('Error', 'Unable to fetch route. Please try again.');
       }
     };
 
     fetchRoute();
   }, [destination]);
 
-  // Zoom in functionality
-  const zoomIn = () => {
-    setRegion((prevRegion) => ({
-      ...prevRegion,
-      latitudeDelta: prevRegion.latitudeDelta / 2,
-      longitudeDelta: prevRegion.longitudeDelta / 2,
-    }));
-  };
-
-  // Zoom out functionality
-  const zoomOut = () => {
-    setRegion((prevRegion) => ({
-      ...prevRegion,
-      latitudeDelta: prevRegion.latitudeDelta * 2,
-      longitudeDelta: prevRegion.longitudeDelta * 2,
-    }));
+  const handleStatusUpdate = async (newStatus) => {
+    // Update status logic for the report (same as before)
+    console.log('Report status updated:', newStatus);
+    Alert.alert('Status Update', `Report marked as ${newStatus}`);
+    navigation.goBack(); // Navigate back to the ReportScreen after status update
   };
 
   return (
     <View style={styles.container}>
-      {/* Profile Icon */}
-      <TouchableOpacity
-        style={styles.profileIcon}
-        onPress={() => navigation.navigate('Profile')} // Navigate to ProfileScreen
-      >
-        <MaterialCommunityIcons name="account-circle" size={60} color="#D9D9D9" />
-      </TouchableOpacity>
-
       <MapView style={styles.map} region={region}>
-        {/* Origin Marker */}
-        <Marker coordinate={region} title="Origin" description="SAN JUAN NDRRMO HEAD QUARTERS" />
-
-        {/* Destination Marker */}
-        {destination && (
-          <Marker coordinate={destination} title="Destination" description="" />
-        )}
-
-        {/* Route Polyline */}
-        {routeCoordinates.length > 0 && (
-          <Polyline coordinates={routeCoordinates} strokeColor="blue" strokeWidth={5} />
-        )}
+        <Marker coordinate={region} title="Origin" description="Current Location" />
+        {destination && <Marker coordinate={destination} title="Destination" description="Report Location" />}
+        {routeCoordinates.length > 0 && <Polyline coordinates={routeCoordinates} strokeWidth={4} strokeColor="#0000FF" />}
       </MapView>
-
-      <View style={styles.buttonContainer}>
-        <Button title="Zoom Out" onPress={zoomOut} />
-        <Button title="Zoom In" onPress={zoomIn} />
+      <View style={styles.controls}>
+        <Button title="Success" onPress={() => handleStatusUpdate('Completed')} />
+        <Button title="Failed" onPress={() => handleStatusUpdate('Failed')} />
       </View>
     </View>
   );
@@ -179,22 +133,19 @@ export default function MapScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#071025',
   },
   map: {
     flex: 1,
   },
-  profileIcon: {
-    position: 'absolute',
-    top: 5,
-    left: 5,
-    zIndex: 1, // Ensure the icon is above other elements
-  },
-  buttonContainer: {
+  controls: {
     position: 'absolute',
     bottom: 20,
+    left: 10,
+    right: 10,
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    width: '100%',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
   },
 });
+
+export default MapScreen;
