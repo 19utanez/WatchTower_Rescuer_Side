@@ -14,7 +14,7 @@ export default function LoginScreen({ navigation }) {
     setLoading(true);
     try {
       // API call for login
-      const response = await axios.post(`http://172.20.23.3:5000/api/auth/login`, {
+      const response = await axios.post(`http://192.168.1.12:5000/api/auth/login`, {
         username,
         password,
       });
@@ -38,8 +38,10 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+            <Text style={styles.title1}>WATCHTOWER</Text>
+
       <Image source={logo} style={styles.logo} />
-      <Text style={styles.title}>rescuer</Text>
+      <Text style={styles.title}>RESCUER</Text>
 
       <Text style={styles.label}>Login</Text>
 
@@ -79,17 +81,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#071025',
     padding: 20,
   },
+  title1: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    marginTop: -70,
+    color: '#fff',
+  },
+
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
-    marginTop: -70,
+    marginBottom: 30,
+    marginTop: -90,
     color: '#fff',
   },
   logo: {
     width: 150,
     height: 150,
-    marginBottom: 70,
+    marginBottom: 100,
   },
   input: {
     width: '100%',

@@ -118,7 +118,7 @@ export default function MapScreen({ route, navigation }) {
   return (
     <View style={styles.container}>
       <MapView style={styles.map} region={region}>
-        <Marker coordinate={region} title="Origin" description="Current Location" />
+        <Marker coordinate={region} title="Origin" description="SAN JUAN NDRRMO HQ" />
         {destination && <Marker coordinate={destination} title="Destination" description="Report Location" />}
         {routeCoordinates.length > 0 && <Polyline coordinates={routeCoordinates} strokeWidth={4} strokeColor="#0000FF" />}
       </MapView>

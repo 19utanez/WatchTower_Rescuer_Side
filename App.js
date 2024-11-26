@@ -5,7 +5,6 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from 'react-native-vector-icons';
 import LoginScreen from './app/screens/LoginScreen';
 import HomeScreen from './app/screens/HomeScreen';
-import SignUpScreen from './app/screens/SignUpScreen';
 import ReportScreen from './app/screens/ReportScreen';
 import MapScreen from './app/screens/MapScreen';
 import NotificationScreen from './app/screens/NotificationScreen';
@@ -73,7 +72,6 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Register" component={SignUpScreen} options={{ headerShown: false }} />
         <Stack.Screen
           name="Main"
           component={TabNavigator}

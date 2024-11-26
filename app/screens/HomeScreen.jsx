@@ -1,20 +1,18 @@
 // app/screens/HomeScreen.jsx
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { MaterialCommunityIcons } from 'react-native-vector-icons';
+import logo from '../../assets/logo.png';
 
 export default function HomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
-      <Text style={styles.title} >Welcome to the Home Screen</Text>
+      <Text style={styles.title} >WELCOME TO</Text>
+      <Text style={styles.title} > WATCH TOWER</Text>
 
+      <Image source={logo} style={styles.logo} />
       {/* Profile Icon */}
-      <TouchableOpacity
-        style={styles.profileIcon}
-        onPress={() => navigation.navigate('Profile')} // Navigate to ProfileScreen
-      >
-        <MaterialCommunityIcons name="account-circle" size={60} color="#D9D9D9" />
-      </TouchableOpacity>
+      
     </View>
   );
 }
@@ -26,6 +24,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#071025',
   },
+
+  logo: {
+    width: 150,
+    height: 150,
+    marginBottom: 70,
+  },
+
   profileIcon: {
     position: 'absolute',
     top: 5,
@@ -34,6 +39,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
+    marginBottom: 10,
     fontWeight: 'bold',
     color: '#fff'
   },

@@ -15,7 +15,7 @@ export default function ProfileScreen({ navigation }) {
 
             if (username) {
                 // API call to fetch all citizens
-                const response = await fetch('http://172.20.23.3:5000/api/auth/rescuer');
+                const response = await fetch('http://192.168.1.12:5000/api/auth/rescuer');
                 const data = await response.json();
                 // Find the citizen matching the logged-in username
                 const loggedInCitizen = data.find(citizen => citizen.username === username);
