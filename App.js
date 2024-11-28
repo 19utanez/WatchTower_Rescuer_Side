@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from 'react-native-vector-icons';
 import LoginScreen from './app/screens/LoginScreen';
 import HomeScreen from './app/screens/HomeScreen';
+import StatisticsScreen from './app/screens/StatisticsScreen';
 import ReportScreen from './app/screens/ReportScreen';
 import MapScreen from './app/screens/MapScreen';
 import NotificationScreen from './app/screens/NotificationScreen';
@@ -36,6 +37,16 @@ function TabNavigator() {
           ),
         }}
       />
+      <Tab.Screen
+  name="Statistics"
+  component={StatisticsScreen}
+  options={{
+    tabBarIcon: ({ color, size }) => (
+      <MaterialCommunityIcons name="chart-bar" csize={size} color={color}/>
+    ),
+  }}
+/>
+      
       <Tab.Screen
         name="Reports"
         component={ReportScreen} 
