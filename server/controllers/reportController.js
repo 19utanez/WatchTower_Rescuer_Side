@@ -2,15 +2,17 @@ import Report from '../models/Report.js';
 import { getGfsBucket } from "../utils/gridFsUtils.js";
 import mongoose from 'mongoose';
 
-// Fetch all reports
+// Fetch all verified reports
 export const getReports = async (req, res) => {
   try {
-    const reports = await Report.find();
+    // Find reports where disasterStatus is "verified"
+    const reports = await Report.find({ disasterStatus: 'verified' });
     res.status(200).json(reports);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch reports', error: error.message });
   }
 };
+
 
 
 // Fetch image by ID

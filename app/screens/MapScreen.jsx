@@ -124,7 +124,7 @@ export default function MapScreen({ route, navigation }) {
       </MapView>
       <View style={styles.controls}>
         <Button title="Success" onPress={() => handleStatusUpdate('Completed')} />
-        <Button title="Failed" onPress={() => handleStatusUpdate('Failed')} />
+        <Button title="F a i l e d" onPress={() => handleStatusUpdate('Failed')} />
       </View>
     </View>
   );
@@ -140,12 +140,11 @@ const styles = StyleSheet.create({
   controls: {
     position: 'absolute',
     bottom: 20,
-    left: 10,
-    right: 10,
+    left: 40,
+    right: 40,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: 50,
   },
 });
 
-export default MapScreen;
