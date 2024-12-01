@@ -1,19 +1,41 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Dimensions, ActivityIndicator, Platform, Button, ScrollView } from "react-native";
-import { LineChart, PieChart } from "react-native-chart-kit"; // Import PieChart
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  ActivityIndicator,
+  Platform,
+  Button,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
+import { LineChart, PieChart } from "react-native-chart-kit";
 import axios from "axios";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { MaterialCommunityIcons } from "react-native-vector-icons"; // Import MaterialCommunityIcons
 
 const StatisticsScreen = () => {
-  const [chartData, setChartData] = useState({
-    labels: [],
+  const placeholderChartData = {
+    labels: ["No Data"],
     datasets: [
-      { data: [], color: () => "#FF6384" },
-      { data: [], color: () => "#36A2EB" },
+      { data: [0], color: () => "#FF6384" },
+      { data: [0], color: () => "#36A2EB" },
     ],
-  });
+  };
 
-  const [pieChartData, setPieChartData] = useState([]);
+  const placeholderPieData = [
+    {
+      name: "No Data",
+      population: 0,
+      color: "#808080",
+      legendFontColor: "#7F7F7F",
+      legendFontSize: 15,
+    },
+  ];
+
+  const [chartData, setChartData] = useState(placeholderChartData);
+  const [pieChartData, setPieChartData] = useState(placeholderPieData);
   const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState(new Date("2023-01-01"));
   const [endDate, setEndDate] = useState(new Date("2024-09-11"));
@@ -21,64 +43,83 @@ const StatisticsScreen = () => {
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("http://192.168.1.12:5010/api/overallStats");
-        const { dailyData } = response.data;
+  // Function to clear data and reset charts
+  const resetCharts = () => {
+    console.log("Resetting charts...");
+    setChartData(placeholderChartData);
+    setPieChartData(placeholderPieData);
 
-        if (dailyData) {
-          const filteredData = dailyData.filter(entry => {
-            const date = new Date(entry.date);
-            return date >= startDate && date <= endDate;
-          });
+    // Optionally reset dates to default or null
+    setStartDate(new Date("2023-01-01"));
+    setEndDate(new Date("2024-09-11"));
 
-          const labels = filteredData.map((entry) => entry.date.substring(5)); // Extract MM-DD
-          const totalReports = filteredData.map((entry) => entry.totalReports);
-          const totalReportsSolved = filteredData.map((entry) => entry.totalReportsSolved);
+    // Stop data loading until the user picks new dates
+    setLoading(false);
+  };
 
-          setChartData({
-            labels,
-            datasets: [
-              {
-                data: totalReports,
-                color: () => "#FF6384", // Red
-              },
-              {
-                data: totalReportsSolved,
-                color: () => "#36A2EB", // Blue
-              },
-            ],
-          });
+  const fetchData = async () => {
+    setLoading(true);
 
-          // Pie chart data
-          const totalReportsCount = totalReports.reduce((acc, num) => acc + num, 0);
-          const totalReportsSolvedCount = totalReportsSolved.reduce((acc, num) => acc + num, 0);
+    try {
+      const response = await axios.get("http://192.168.1.6:5010/api/overallStats");
+      const { dailyData } = response.data;
 
-          setPieChartData([
+      if (dailyData) {
+        const filteredData = dailyData.filter((entry) => {
+          const date = new Date(entry.date);
+          return date >= startDate && date <= endDate;
+        });
+
+        const labels = filteredData.map((entry) => entry.date.substring(5)); // Extract MM-DD
+        const totalReports = filteredData.map((entry) => entry.totalReports);
+        const totalReportsSolved = filteredData.map((entry) => entry.totalReportsSolved);
+
+        setChartData({
+          labels: labels.length > 0 ? labels : ["No Data"],
+          datasets: [
             {
-              name: "Total Reports",
-              population: totalReportsCount,
-              color: "#FF6384",
-              legendFontColor: "#7F7F7F",
-              legendFontSize: 15,
+              data: totalReports.length > 0 ? totalReports : [0],
+              color: () => "#FF6384", // Red
             },
             {
-              name: "Solved Reports",
-              population: totalReportsSolvedCount,
-              color: "#36A2EB",
-              legendFontColor: "#7F7F7F",
-              legendFontSize: 15,
+              data: totalReportsSolved.length > 0 ? totalReportsSolved : [0],
+              color: () => "#36A2EB", // Blue
             },
-          ]);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
+          ],
+        });
+
+        const totalReportsCount = totalReports.reduce((acc, num) => acc + num, 0);
+        const totalReportsSolvedCount = totalReportsSolved.reduce((acc, num) => acc + num, 0);
+
+        setPieChartData(
+          totalReportsCount > 0 || totalReportsSolvedCount > 0
+            ? [
+                {
+                  name: "Total Reports",
+                  population: totalReportsCount,
+                  color: "#FF6384",
+                  legendFontColor: "#7F7F7F",
+                  legendFontSize: 15,
+                },
+                {
+                  name: "Solved Reports",
+                  population: totalReportsSolvedCount,
+                  color: "#36A2EB",
+                  legendFontColor: "#7F7F7F",
+                  legendFontSize: 15,
+                },
+              ]
+            : placeholderPieData
+        );
       }
-    };
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, [startDate, endDate]);
 
@@ -118,6 +159,11 @@ const StatisticsScreen = () => {
             onChange={handleStartDateChange}
           />
         )}
+
+        {/* Reset/Refresh Button */}
+        <TouchableOpacity onPress={resetCharts} style={styles.refreshButton}>
+          <MaterialCommunityIcons name="reload" size={24} color="#FFF" />
+        </TouchableOpacity>
 
         <Button onPress={() => setShowEndDatePicker(true)} title="Select End Date" />
         {showEndDatePicker && (
@@ -222,6 +268,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 20,
+    alignItems: "center",
   },
   legendContainer: {
     flexDirection: "row",
@@ -233,25 +280,30 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   legendColor: {
-    width: 15,
-    height: 15,
+    width: 20,
+    height: 20,
     marginRight: 5,
-    borderRadius: 2,
   },
   legendText: {
-    color: "#FFF",
+    color: "#fff",
     fontSize: 14,
   },
+  refreshButton: {
+    backgroundColor: "#2196F3",
+    padding: 10,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   pieChartTitle: {
+    textAlign: "center",
     fontSize: 18,
     fontWeight: "bold",
-    textAlign: "center",
-    marginTop: 80,
-    marginVertical: 20,
     color: "#FFF",
+    marginBottom: 10,
   },
   pieChart: {
-    marginVertical: 8,
+    marginVertical: 10,
     borderRadius: 16,
   },
 });

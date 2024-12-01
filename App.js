@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from 'react-native-vector-icons';
+import LinearGradient from 'react-native-linear-gradient'; // Import LinearGradient
 import LoginScreen from './app/screens/LoginScreen';
 import HomeScreen from './app/screens/HomeScreen';
 import StatisticsScreen from './app/screens/StatisticsScreen';
@@ -38,18 +39,17 @@ function TabNavigator() {
         }}
       />
       <Tab.Screen
-  name="Statistics"
-  component={StatisticsScreen}
-  options={{
-    tabBarIcon: ({ color, size }) => (
-      <MaterialCommunityIcons name="chart-bar" csize={size} color={color}/>
-    ),
-  }}
-/>
-      
+        name="Statistics"
+        component={StatisticsScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="chart-bar" color={color} size={size} />
+          ),
+        }}
+      />
       <Tab.Screen
         name="Reports"
-        component={ReportScreen} 
+        component={ReportScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="file-document" color={color} size={size} />
